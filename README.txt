@@ -10,11 +10,11 @@ You have to provide a config file with the following content:
 
 ```
 #!ini
-    [config]
-    template_path = /path/to/template
-    log = /path/to/logfile
-    projects = your_project1
-        your_project2
+[config]
+template_path = /path/to/template
+log = /path/to/logfile
+projects = your_project1
+    your_project2
 ```
 
 
@@ -23,25 +23,24 @@ The template will be rendered using jinja2, and could have the following content
 
 ```
 #!html
+{% for project in projects %}
 
-    {% for project in projects %}
+<h2>{{project.name}}</h2>
 
-    <h2>{{project.name}}</h2>
+{% for issue in project.issues %}
 
-    {% for issue in project.issues %}
+<h3>{{issue.title}}</h3>
+ <pre>
+ {{issue.title}}
+ {{issue.content}}
+ {{issue.status}}
+ {{issue.created}}
+ {{issue.priority}}
+ {{issue.url}}
+ {{issue.author}}
+ </pre>
 
-    <h3>{{issue.title}}</h3>
-     <pre>
-     {{issue.title}}
-     {{issue.content}}
-     {{issue.status}}
-     {{issue.created}}
-     {{issue.priority}}
-     {{issue.url}}
-     {{issue.author}}
-     </pre>
+{% endfor %}
 
-    {% endfor %}
-
-    {% endfor %}
+{% endfor %}
 ```
