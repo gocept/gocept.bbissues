@@ -5,7 +5,7 @@ import logging
 import argparse
 
 
-logging.basicConfig(filename='bbissues.log',level=logging.WARNING)
+
 log = logging.getLogger('bbissues')
 
 
@@ -48,6 +48,8 @@ def main():
     config.read(args.config_path)
     with open(config.get('config', 'template_path')) as templatefile:
         TEMPLATE = Template(templatefile.read())
+    logging.basicConfig(
+        filename=config.get('config', 'log'), level=logging.WARNING)
     projects = config.get('config', 'projects')
     projectsdata = []
     for project in projects.split():
