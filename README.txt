@@ -9,7 +9,6 @@ This package is compatible with Python version 2.7.
 You have to provide a config file with the following content:
 
 ```
-#!ini
 [config]
 template_path = /path/to/template
 log = /path/to/logfile
@@ -22,7 +21,6 @@ The template will be rendered using jinja2, and could have the following content
 
 
 ```
-#!html
 {% for project in projects %}
 
 <h2>{{project.name}}</h2>
