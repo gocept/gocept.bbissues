@@ -1,0 +1,56 @@
+Metadata-Version: 1.1
+Name: gocept.bbissues
+Version: 0.1.dev0
+Summary: Collect issues from multiple bitbucket repositories and generate a nice html page.
+Home-page: https://bitbucket.org/gocept/gocept.bbissues/
+Author: gocept <mail@gocept.com>
+Author-email: mail@gocept.com
+License: ZPL 2.1
+Description: ================================
+        The gocept.bbissues distribution
+        ================================
+        
+        Collect issues from multiple bitbucket repositories and generate a nice html page.
+        
+        This package is compatible with Python version 2.7.
+        
+        
+        ==========================
+        Developing gocept.bbissues
+        ==========================
+        
+        :Author:
+            `gocept <http://gocept.com/>`_ <mail@gocept.com>
+        
+        :Online documentation:
+            https://pythonhosted.org/gocept.bbissues/
+        
+        :PyPI page:
+            https://pypi.python.org/pypi/gocept.bbissues
+        
+        :Issues:
+            `report by e-mail <mail@gocept.com>`_
+        
+        :Source code:
+            https://bitbucket.org/gocept/gocept.bbissues
+        
+        :Current change log:
+            https://bitbucket.org/gocept/gocept.bbissues/raw-file/tip/CHANGES.txt
+        
+        
+        ==============================
+        Change log for gocept.bbissues
+        ==============================
+        
+        0.1 (unreleased)
+        ================
+        
+        initial release
+        
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: Zope Public License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 2 :: Only

@@ -1,0 +1,13 @@
+README.txt
+setup.py
+src/gocept/__init__.py
+src/gocept.bbissues.egg-info/PKG-INFO
+src/gocept.bbissues.egg-info/SOURCES.txt
+src/gocept.bbissues.egg-info/dependency_links.txt
+src/gocept.bbissues.egg-info/entry_points.txt
+src/gocept.bbissues.egg-info/namespace_packages.txt
+src/gocept.bbissues.egg-info/not-zip-safe
+src/gocept.bbissues.egg-info/requires.txt
+src/gocept.bbissues.egg-info/top_level.txt
+src/gocept/bbissues/__init__.py
+src/gocept/bbissues/tests/__init__.py
