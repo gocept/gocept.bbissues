@@ -8,13 +8,21 @@ This package is compatible with Python version 2.7.
 
 You have to provide a config file with the following content:
 
+```
+#!ini
     [config]
     template_path = /path/to/template
     log = /path/to/logfile
     projects = your_project1
         your_project2
+```
+
 
 The template will be rendered using jinja2, and could have the following content:
+
+
+```
+#!html
 
     {% for project in projects %}
 
@@ -36,3 +44,4 @@ The template will be rendered using jinja2, and could have the following content
     {% endfor %}
 
     {% endfor %}
+```
