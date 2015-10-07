@@ -21,6 +21,8 @@ setup(
 
     install_requires=[
         'setuptools',
+        'requests',
+        'jinja2'
     ],
 
     extras_require={
