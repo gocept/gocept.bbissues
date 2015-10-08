@@ -2,6 +2,8 @@ import requests
 from jinja2 import Template
 import ConfigParser
 import logging
+import dateutil.parser
+import pkg_resources
 import argparse
 
 
@@ -15,28 +17,74 @@ parser.add_argument('--config', dest='config_path', help='Config file.',
     required=True)
 
 
-BASE_URL = 'https://api.bitbucket.org/1.0/repositories/gocept/{}/issues?status=!resolved'
-WEB_BASE_URL = 'https://bitbucket.org/{}'
-TEMPLATE = ''
+BB_ISSUES_BASE_URL = 'https://api.bitbucket.org/1.0/repositories/{}/{}/issues?status=!resolved'
+BB_PULLREQUESTS_BASE_URL = 'https://api.bitbucket.org/2.0/repositories/{}/{}/pullrequests'
+
+BB_WEB_BASE_URL = 'https://bitbucket.org/{}'
+DEFAULT_TEMPLATE = pkg_resources.resource_string('gocept.bbissues', 'index.jj2')
+
+def timefmt(timestr):
+    return dateutil.parser.parse(timestr).strftime('%Y-%m-%d %H:%M')
 
 
-def collect_project_issues(project):
-    url = BASE_URL.format(project)
+
+def get_bb_json(urltemplate, spec):
+    owner, project = spec.split(':')
+    url = urltemplate.format(owner, project)
     result = requests.get(url)
     if not result.ok:
         error = result.json()['error']['message']
         log.warn('Error while calling {}: {}'.format(url, error))
         return
-    issues = result.json()
+    return result.json()
+
+def parse_spec(spec):
+    return spec.split(':')
+
+def collect_project_pullrequests(spec):
+    owner, project = parse_spec(spec)
+    prs = get_bb_json(BB_PULLREQUESTS_BASE_URL, spec)
+    data = []
+    if prs is None:
+        return
+    for pr in prs['values']:
+        if pr['state'] != 'OPEN':
+            continue
+        prdata = dict(
+            title=pr['title'],
+            content=pr['description'].strip(),
+            status=pr['state'],
+            created=timefmt(pr['created_on']),
+            priority='pullrequest',
+            prioclass=prioclass('normal'),
+            url=BB_WEB_BASE_URL.format(
+                '{}/{}/pull-requests/{}'.format(owner, project, pr['id'])),
+            author=pr['author']['display_name'])
+        data.append(prdata)
+    return data
+
+
+def prioclass(prio):
+    return dict(minor='warning',
+                major='danger',
+                normal='primary').get(prio, 'default')
+
+
+def collect_project_issues(spec):
+    owner, project = spec.split(':')
+    issues = get_bb_json(BB_ISSUES_BASE_URL, spec)
+    if issues is None:
+        return
     data = []
     for issue in issues['issues']:
         issuedata = dict(
             title=issue['title'],
-            content=issue['content'],
+            content=issue['content'].strip(),
             status=issue['status'],
-            created=issue['created_on'],
+            created=timefmt(issue['created_on']),
             priority=issue['priority'],
-            url=WEB_BASE_URL.format(issue['resource_uri'][18:]),
+            prioclass=prioclass(issue['priority']),
+            url=BB_WEB_BASE_URL.format(issue['resource_uri'][18:]),
             author=issue['reported_by']['display_name'])
         data.append(issuedata)
     return data
@@ -46,18 +94,25 @@ def main():
     args = parser.parse_args()
     config = ConfigParser.ConfigParser()
     config.read(args.config_path)
-    with open(config.get('config', 'template_path')) as templatefile:
-        TEMPLATE = Template(templatefile.read())
+    try:
+        custom_template = config.get('config', 'template_path')
+        with open(custom_template) as templatefile:
+            template_content = templatefile.read()
+    except ConfigParser.NoOptionError:
+        template_content = DEFAULT_TEMPLATE
+    template = Template(template_content)
     logging.basicConfig(
         filename=config.get('config', 'log'), level=logging.WARNING)
-    projects = config.get('config', 'projects')
+    projects = config.get('bitbucket', 'projects')
     projectsdata = []
     for project in projects.split():
         issuedata = collect_project_issues(project)
-        if issuedata is not None:
-            projectsdata.append(dict(name=project, issues=issuedata))
+        prdata = collect_project_pullrequests(project)
+        if issuedata or prdata:
+            projectsdata.append(
+                dict(name=parse_spec(project)[1], issues=issuedata, pullrequests=prdata))
 
-    result = TEMPLATE.render(projects=projectsdata)
+    result = template.render(projects=projectsdata)
     print result
 
 
