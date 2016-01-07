@@ -31,10 +31,14 @@ def timefmt(timestr):
 def get_bb_json(urltemplate, spec):
     owner, project = spec.split(':')
     url = urltemplate.format(owner, project)
-    result = requests.get(url)
-    if not result.ok:
-        error = result.json()['error']['message']
-        log.warn('Error while calling {}: {}'.format(url, error))
+    try:
+        result = requests.get(url)
+        if not result.ok:
+            error = result.json()['error']['message']
+            log.warn('Error while calling {}: {}'.format(url, error))
+            return
+    except requests.ConnectionError:
+        log.warn('Connection error while calling {}'.format(url))
         return
     return result.json()
 
