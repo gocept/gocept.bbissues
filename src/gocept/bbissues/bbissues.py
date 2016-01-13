@@ -61,7 +61,7 @@ class Base(object):
 class Bitbucket(Base):
 
     issue_base_url = ('https://api.bitbucket.org/1.0/repositories/{}/{}/'
-                      'issues?status=!resolved')
+                      'issues?status=new&status=open&status=on+hold')
     pullrequest_base_url = ('https://api.bitbucket.org/2.0/repositories/{}/{}'
                             '/pullrequests')
     web_base_url = 'https://bitbucket.org/{}'
