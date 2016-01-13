@@ -2,7 +2,7 @@
 Change log for gocept.bbissues
 ==============================
 
-0.2 (unreleased)
+0.2 (2016-01-13)
 ================
 
 - Add Github as issue source.
