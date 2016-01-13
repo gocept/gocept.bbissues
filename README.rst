@@ -59,3 +59,6 @@ Call it using::
 
     $ <path to bin directory>/bbissues --config <path to config file>
 
+It prints the generated HTML to the console. You might need to redirect the
+output to a file.
+
