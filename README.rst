@@ -17,6 +17,10 @@ You have to provide a config file with the following content::
     projects = owner:project1
                owner:project2
 
+	[github]
+	projects = owner:project1
+    		   owner:project2
+
 
 The template will be rendered using jinja2, and could have the following content::
 
