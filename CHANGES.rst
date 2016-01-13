@@ -2,6 +2,12 @@
 Change log for gocept.bbissues
 ==============================
 
+0.3 (unreleased)
+================
+
+- Nothing changed yet.
+
+
 0.2 (2016-01-13)
 ================
 
