@@ -10,10 +10,13 @@ You have to provide a config file with the following content:
 
 ```
 [config]
-template_path = /path/to/template
-log = /path/to/logfile
-projects = your_project1
-    your_project2
+log = issues.log
+# optional
+template_path = template.jj2
+
+[bitbucket]
+projects = owner:project1
+    owner:project2
 ```
 
 
