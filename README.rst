@@ -6,6 +6,17 @@ Collect open issues from multiple bitbucket repositories and generate a nice htm
 
 This package is compatible with Python version 2.7.
 
+Installation
+============
+
+Install the package using PIP::
+
+    $ pip install gocept.bbissues
+
+
+Configuration
+=============
+
 You have to provide a config file with the following content::
 
     [config]
@@ -39,3 +50,12 @@ The template will be rendered using jinja2, and could have the following content
              </pre>
         {% endfor %}
     {% endfor %}
+
+
+Usage
+=====
+
+Call it using::
+
+    $ <path to bin directory>/bbissues --config <path to config file>
+
