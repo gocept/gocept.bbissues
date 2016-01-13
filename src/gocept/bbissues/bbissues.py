@@ -23,75 +23,88 @@ BB_PULLREQUESTS_BASE_URL = 'https://api.bitbucket.org/2.0/repositories/{}/{}/pul
 BB_WEB_BASE_URL = 'https://bitbucket.org/{}'
 DEFAULT_TEMPLATE = pkg_resources.resource_string('gocept.bbissues', 'index.jj2')
 
+
 def timefmt(timestr):
     return dateutil.parser.parse(timestr).strftime('%Y-%m-%d %H:%M')
 
 
+class Bitbucket(object):
 
-def get_bb_json(urltemplate, spec):
-    owner, project = spec.split(':')
-    url = urltemplate.format(owner, project)
-    try:
-        result = requests.get(url)
-        if not result.ok:
-            error = result.json()['error']['message']
-            log.warn('Error while calling {}: {}'.format(url, error))
+    def get_bb_json(self, urltemplate, spec):
+        owner, project = spec.split(':')
+        url = urltemplate.format(owner, project)
+        try:
+            result = requests.get(url)
+            if not result.ok:
+                error = result.json()['error']['message']
+                log.warn('Error while calling {}: {}'.format(url, error))
+                return
+        except requests.ConnectionError:
+            log.warn('Connection error while calling {}'.format(url))
             return
-    except requests.ConnectionError:
-        log.warn('Connection error while calling {}'.format(url))
-        return
-    return result.json()
+        return result.json()
 
-def parse_spec(spec):
-    return spec.split(':')
+    def parse_spec(self, spec):
+        return spec.split(':')
 
-def collect_project_pullrequests(spec):
-    owner, project = parse_spec(spec)
-    prs = get_bb_json(BB_PULLREQUESTS_BASE_URL, spec)
-    data = []
-    if prs is None:
-        return
-    for pr in prs['values']:
-        if pr['state'] != 'OPEN':
-            continue
-        prdata = dict(
-            title=pr['title'],
-            content=pr['description'].strip(),
-            status=pr['state'],
-            created=timefmt(pr['created_on']),
-            priority='pullrequest',
-            prioclass=prioclass('normal'),
-            url=BB_WEB_BASE_URL.format(
-                '{}/{}/pull-requests/{}'.format(owner, project, pr['id'])),
-            author=pr['author']['display_name'])
-        data.append(prdata)
-    return data
+    def collect_project_pullrequests(self, spec):
+        owner, project = self.parse_spec(spec)
+        prs = self.get_bb_json(BB_PULLREQUESTS_BASE_URL, spec)
+        data = []
+        if prs is None:
+            return
+        for pr in prs['values']:
+            if pr['state'] != 'OPEN':
+                continue
+            prdata = dict(
+                title=pr['title'],
+                content=pr['description'].strip(),
+                status=pr['state'],
+                created=timefmt(pr['created_on']),
+                priority='pullrequest',
+                prioclass=self.prioclass('normal'),
+                url=BB_WEB_BASE_URL.format(
+                    '{}/{}/pull-requests/{}'.format(owner, project, pr['id'])),
+                author=pr['author']['display_name'])
+            data.append(prdata)
+        return data
 
+    def prioclass(self, prio):
+        return dict(minor='warning',
+                    major='danger',
+                    normal='primary').get(prio, 'default')
 
-def prioclass(prio):
-    return dict(minor='warning',
-                major='danger',
-                normal='primary').get(prio, 'default')
+    def collect_project_issues(self, spec):
+        owner, project = spec.split(':')
+        issues = self.get_bb_json(BB_ISSUES_BASE_URL, spec)
+        if issues is None:
+            return
+        data = []
+        for issue in issues['issues']:
+            issuedata = dict(
+                title=issue['title'],
+                content=issue['content'].strip(),
+                status=issue['status'],
+                created=timefmt(issue['created_on']),
+                priority=issue['priority'],
+                prioclass=self.prioclass(issue['priority']),
+                url=BB_WEB_BASE_URL.format(issue['resource_uri'][18:]),
+                author=issue['reported_by']['display_name'])
+            data.append(issuedata)
+        return data
 
+    def __init__(self, projects):
+        self.projects = projects
 
-def collect_project_issues(spec):
-    owner, project = spec.split(':')
-    issues = get_bb_json(BB_ISSUES_BASE_URL, spec)
-    if issues is None:
-        return
-    data = []
-    for issue in issues['issues']:
-        issuedata = dict(
-            title=issue['title'],
-            content=issue['content'].strip(),
-            status=issue['status'],
-            created=timefmt(issue['created_on']),
-            priority=issue['priority'],
-            prioclass=prioclass(issue['priority']),
-            url=BB_WEB_BASE_URL.format(issue['resource_uri'][18:]),
-            author=issue['reported_by']['display_name'])
-        data.append(issuedata)
-    return data
+    def __call__(self):
+        for project in self.projects:
+            issuedata = self.collect_project_issues(project)
+            prdata = self.collect_project_pullrequests(project)
+            if issuedata or prdata:
+                yield dict(
+                    name=self.parse_spec(project)[1],
+                    issues=issuedata,
+                    pullrequests=prdata)
 
 
 def main():
@@ -108,13 +121,7 @@ def main():
     logging.basicConfig(
         filename=config.get('config', 'log'), level=logging.WARNING)
     projects = config.get('bitbucket', 'projects')
-    projectsdata = []
-    for project in projects.split():
-        issuedata = collect_project_issues(project)
-        prdata = collect_project_pullrequests(project)
-        if issuedata or prdata:
-            projectsdata.append(
-                dict(name=parse_spec(project)[1], issues=issuedata, pullrequests=prdata))
+    projectsdata = Bitbucket(projects.split())()
 
     result = template.render(projects=projectsdata)
     print result
