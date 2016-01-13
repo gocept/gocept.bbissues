@@ -23,7 +23,27 @@ def timefmt(timestr):
     return dateutil.parser.parse(timestr).strftime('%Y-%m-%d %H:%M')
 
 
-class Bitbucket(object):
+class Base(object):
+
+    issue_base_url = NotImplemented
+    pullrequest_base_url = NotImplemented
+    web_base_url = NotImplemented
+
+    def __init__(self, projects):
+        self.projects = projects.split()
+
+    def __call__(self):
+        for owner, project in [p.split(':') for p in self.projects]:
+            issuedata = self.collect_project_issues(owner, project)
+            prdata = self.collect_project_pullrequests(owner, project)
+            if issuedata or prdata:
+                yield dict(
+                    name=project,
+                    issues=issuedata,
+                    pullrequests=prdata)
+
+
+class Bitbucket(Base):
 
     issue_base_url = ('https://api.bitbucket.org/1.0/repositories/{}/{}/'
                       'issues?status=!resolved')
@@ -31,11 +51,7 @@ class Bitbucket(object):
                             '/pullrequests')
     web_base_url = 'https://bitbucket.org/{}'
 
-    def __init__(self, projects):
-        self.projects = projects
-
-    def get_bb_json(self, urltemplate, spec):
-        owner, project = spec.split(':')
+    def get_bb_json(self, urltemplate, owner, project):
         url = urltemplate.format(owner, project)
         try:
             result = requests.get(url)
@@ -48,12 +64,8 @@ class Bitbucket(object):
             return
         return result.json()
 
-    def parse_spec(self, spec):
-        return spec.split(':')
-
-    def collect_project_pullrequests(self, spec):
-        owner, project = self.parse_spec(spec)
-        prs = self.get_bb_json(self.pullrequest_base_url, spec)
+    def collect_project_pullrequests(self, owner, project):
+        prs = self.get_bb_json(self.pullrequest_base_url, owner, project)
         data = []
         if prs is None:
             return
@@ -78,9 +90,8 @@ class Bitbucket(object):
                     major='danger',
                     normal='primary').get(prio, 'default')
 
-    def collect_project_issues(self, spec):
-        owner, project = spec.split(':')
-        issues = self.get_bb_json(self.issue_base_url, spec)
+    def collect_project_issues(self, owner, project):
+        issues = self.get_bb_json(self.issue_base_url, owner, project)
         if issues is None:
             return
         data = []
@@ -97,15 +108,7 @@ class Bitbucket(object):
             data.append(issuedata)
         return data
 
-    def __call__(self):
-        for project in self.projects:
-            issuedata = self.collect_project_issues(project)
-            prdata = self.collect_project_pullrequests(project)
-            if issuedata or prdata:
-                yield dict(
-                    name=self.parse_spec(project)[1],
-                    issues=issuedata,
-                    pullrequests=prdata)
+
 
 
 def main():
@@ -121,8 +124,10 @@ def main():
     template = Template(template_content)
     logging.basicConfig(
         filename=config.get('config', 'log'), level=logging.WARNING)
+    projectsdata = []
+
     projects = config.get('bitbucket', 'projects')
-    projectsdata = Bitbucket(projects.split())()
+    projectsdata.extend(Bitbucket(projects)())
 
     result = template.render(projects=projectsdata)
     print result
