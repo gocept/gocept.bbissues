@@ -42,6 +42,21 @@ class Base(object):
                     issues=issuedata,
                     pullrequests=prdata)
 
+    def get_error_message(self, data):
+        raise NotImplementedError()
+
+    def get_json(self, url):
+        try:
+            result = requests.get(url)
+            if not result.ok:
+                error = self.get_error_message(result.json())
+                log.warn('Error while calling {}: {}'.format(url, error))
+                return
+        except requests.ConnectionError:
+            log.warn('Connection error while calling {}'.format(url))
+            return
+        return result.json()
+
 
 class Bitbucket(Base):
 
@@ -51,24 +66,14 @@ class Bitbucket(Base):
                             '/pullrequests')
     web_base_url = 'https://bitbucket.org/{}'
 
-    def get_bb_json(self, urltemplate, owner, project):
-        url = urltemplate.format(owner, project)
-        try:
-            result = requests.get(url)
-            if not result.ok:
-                error = result.json()['error']['message']
-                log.warn('Error while calling {}: {}'.format(url, error))
-                return
-        except requests.ConnectionError:
-            log.warn('Connection error while calling {}'.format(url))
-            return
-        return result.json()
+    def get_error_message(self, data):
+        return data['error']['message']
 
     def collect_project_pullrequests(self, owner, project):
-        prs = self.get_bb_json(self.pullrequest_base_url, owner, project)
+        prs = self.get_json(self.pullrequest_base_url.format(owner, project))
         data = []
         if prs is None:
-            return
+            return []
         for pr in prs['values']:
             if pr['state'] != 'OPEN':
                 continue
@@ -91,9 +96,9 @@ class Bitbucket(Base):
                     normal='primary').get(prio, 'default')
 
     def collect_project_issues(self, owner, project):
-        issues = self.get_bb_json(self.issue_base_url, owner, project)
+        issues = self.get_json(self.issue_base_url.format(owner, project))
         if issues is None:
-            return
+            return []
         data = []
         for issue in issues['issues']:
             issuedata = dict(
@@ -109,6 +114,34 @@ class Bitbucket(Base):
         return data
 
 
+class Github(Base):
+
+    issue_base_url = 'https://api.github.com/repos/{}/{}/issues'
+    pullrequest_base_url = 'https://api.github.com/repos/{}/{}/pulls'
+
+    def get_error_message(self, data):
+        return data['message']
+
+    def collect_data(self, url):
+        issues = self.get_json(url)
+        for issue in issues:
+            yield dict(
+                title=issue['title'],
+                content=issue['body'].strip(),
+                status=issue['state'],
+                created=timefmt(issue['created_at']),
+                priority=None,
+                prioclass=None,
+                url=issue['html_url'],
+                author=issue['user']['login'])
+
+    def collect_project_issues(self, owner, project):
+        return list(self.collect_data(
+            self.issue_base_url.format(owner, project)))
+
+    def collect_project_pullrequests(self, owner, project):
+        return list(self.collect_data(
+            self.pullrequest_base_url.format(owner, project)))
 
 
 def main():
@@ -128,6 +161,9 @@ def main():
 
     projects = config.get('bitbucket', 'projects')
     projectsdata.extend(Bitbucket(projects)())
+
+    projects = config.get('github', 'projects')
+    projectsdata.extend(Github(projects)())
 
     result = template.render(projects=projectsdata)
     print result
