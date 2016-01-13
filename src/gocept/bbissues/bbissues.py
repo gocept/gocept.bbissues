@@ -7,21 +7,16 @@ import pkg_resources
 import argparse
 
 
-
 log = logging.getLogger('bbissues')
 
 
 parser = argparse.ArgumentParser(
     description='Collect issues from bitbucket issue trackers.')
 parser.add_argument('--config', dest='config_path', help='Config file.',
-    required=True)
+                    required=True)
 
-
-BB_ISSUES_BASE_URL = 'https://api.bitbucket.org/1.0/repositories/{}/{}/issues?status=!resolved'
-BB_PULLREQUESTS_BASE_URL = 'https://api.bitbucket.org/2.0/repositories/{}/{}/pullrequests'
-
-BB_WEB_BASE_URL = 'https://bitbucket.org/{}'
-DEFAULT_TEMPLATE = pkg_resources.resource_string('gocept.bbissues', 'index.jj2')
+DEFAULT_TEMPLATE = pkg_resources.resource_string(
+    'gocept.bbissues', 'index.jj2')
 
 
 def timefmt(timestr):
@@ -29,6 +24,15 @@ def timefmt(timestr):
 
 
 class Bitbucket(object):
+
+    issue_base_url = ('https://api.bitbucket.org/1.0/repositories/{}/{}/'
+                      'issues?status=!resolved')
+    pullrequest_base_url = ('https://api.bitbucket.org/2.0/repositories/{}/{}'
+                            '/pullrequests')
+    web_base_url = 'https://bitbucket.org/{}'
+
+    def __init__(self, projects):
+        self.projects = projects
 
     def get_bb_json(self, urltemplate, spec):
         owner, project = spec.split(':')
@@ -49,7 +53,7 @@ class Bitbucket(object):
 
     def collect_project_pullrequests(self, spec):
         owner, project = self.parse_spec(spec)
-        prs = self.get_bb_json(BB_PULLREQUESTS_BASE_URL, spec)
+        prs = self.get_bb_json(self.pullrequest_base_url, spec)
         data = []
         if prs is None:
             return
@@ -63,7 +67,7 @@ class Bitbucket(object):
                 created=timefmt(pr['created_on']),
                 priority='pullrequest',
                 prioclass=self.prioclass('normal'),
-                url=BB_WEB_BASE_URL.format(
+                url=self.web_base_url.format(
                     '{}/{}/pull-requests/{}'.format(owner, project, pr['id'])),
                 author=pr['author']['display_name'])
             data.append(prdata)
@@ -76,7 +80,7 @@ class Bitbucket(object):
 
     def collect_project_issues(self, spec):
         owner, project = spec.split(':')
-        issues = self.get_bb_json(BB_ISSUES_BASE_URL, spec)
+        issues = self.get_bb_json(self.issue_base_url, spec)
         if issues is None:
             return
         data = []
@@ -88,13 +92,10 @@ class Bitbucket(object):
                 created=timefmt(issue['created_on']),
                 priority=issue['priority'],
                 prioclass=self.prioclass(issue['priority']),
-                url=BB_WEB_BASE_URL.format(issue['resource_uri'][18:]),
+                url=self.web_base_url.format(issue['resource_uri'][18:]),
                 author=issue['reported_by']['display_name'])
             data.append(issuedata)
         return data
-
-    def __init__(self, projects):
-        self.projects = projects
 
     def __call__(self):
         for project in self.projects:
