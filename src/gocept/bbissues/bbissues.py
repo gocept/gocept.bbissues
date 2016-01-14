@@ -51,10 +51,10 @@ class Base(object):
             if not result.ok:
                 error = self.get_error_message(result.json())
                 log.warn('Error while calling {}: {}'.format(url, error))
-                return
+                return []
         except requests.ConnectionError:
             log.warn('Connection error while calling {}'.format(url))
-            return
+            return []
         return result.json()
 
 

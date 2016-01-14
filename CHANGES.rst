@@ -5,7 +5,7 @@ Change log for gocept.bbissues
 0.4 (unreleased)
 ================
 
-- Nothing changed yet.
+- Improve error handling.
 
 
 0.3 (2016-01-13)
