@@ -2,7 +2,7 @@
 Change log for gocept.bbissues
 ==============================
 
-0.4 (unreleased)
+0.4 (2016-01-14)
 ================
 
 - Improve error handling.
