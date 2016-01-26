@@ -2,7 +2,7 @@
 Change log for gocept.bbissues
 ==============================
 
-0.5 (unreleased)
+0.5 (2016-01-26)
 ================
 
 - Add JSON export for issues and pullrequest not older that `json_export_days`
