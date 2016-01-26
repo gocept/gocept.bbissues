@@ -5,6 +5,8 @@ import logging
 import dateutil.parser
 import pkg_resources
 import argparse
+import json
+import datetime
 
 
 log = logging.getLogger('bbissues')
@@ -166,6 +168,24 @@ def main():
     projectsdata.extend(Github(projects)())
 
     result = template.render(projects=projectsdata)
+    json_result = []
+    not_older_than = (datetime.datetime.now() -
+                      datetime.timedelta(
+                        days=int(config.get('config', 'json_export_days'))))
+    for project in projectsdata:
+        for item in project['issues'] + project['pullrequests']:
+            created = dateutil.parser.parse(item['created'])
+            if created < not_older_than:
+                continue
+            json_result.append(dict(
+                project=project['name'],
+                title=item['title'],
+                author=item['author'],
+                created=item['created'],
+                url=item['url']))
+    with open('bbissues.json', 'w') as issues_file:
+        issues_file.write(json.dumps(json_result))
+
     print result
 
 
