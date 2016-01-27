@@ -5,7 +5,8 @@ Change log for gocept.bbissues
 0.6 (unreleased)
 ================
 
-- Nothing changed yet.
+- Save HTML to a file which is specified in config. Made path to JSON file
+  configurable.
 
 
 0.5 (2016-01-26)
