@@ -1,12 +1,12 @@
-import requests
+from datetime import datetime, timedelta
 from jinja2 import Template
 import ConfigParser
-import logging
-import dateutil.parser
-import pkg_resources
 import argparse
+import dateutil.parser
 import json
-import datetime
+import logging
+import pkg_resources
+import requests
 
 
 log = logging.getLogger('bbissues')
@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--config', dest='config_path', help='Config file.',
                     required=True)
 
-DEFAULT_TEMPLATE = pkg_resources.resource_string(
+DEFAULT_TEMPLATE_PATH = pkg_resources.resource_filename(
     'gocept.bbissues', 'index.jj2')
 
 
@@ -146,48 +146,74 @@ class Github(Base):
             self.pullrequest_base_url.format(owner, project)))
 
 
+class Handler(object):
+
+    def __init__(self):
+        args = parser.parse_args()
+        self.config = ConfigParser.ConfigParser()
+        self.config.read(args.config_path)
+        logging.basicConfig(
+            filename=self.config.get('config', 'log'),
+            level=logging.WARNING)
+        self.projects = self.get_projects()
+
+    def get_config_option(self, option, section='config', default=None):
+        try:
+            return self.config.get(section, option)
+        except ConfigParser.NoOptionError:
+            return default
+
+    def get_projects(self):
+        result = []
+
+        projects = self.get_config_option('projects', section='bitbucket')
+        if projects:
+            result.extend(Bitbucket(projects)())
+
+        projects = self.get_config_option('projects', section='github')
+        if projects:
+            result.extend(Github(projects)())
+        return result
+
+    def export_html(self):
+        export_path = self.get_config_option('html_export_path')
+        if export_path is None:
+            return
+        template_path = self.get_config_option(
+            'template_path', default=DEFAULT_TEMPLATE_PATH)
+        with open(template_path) as templatefile:
+            with open(export_path, 'w') as html_file:
+                (Template(templatefile.read())
+                 .stream(projects=self.projects)
+                 .dump(html_file))
+
+    def export_json(self):
+        export_path = self.get_config_option('json_export_path')
+        if export_path is None:
+            return
+        days = int(self.get_config_option('json_export_days', default=60))
+
+        result = []
+        not_older_than = datetime.now() - timedelta(days=days)
+        for project in self.projects:
+            for item in project['issues'] + project['pullrequests']:
+                created = dateutil.parser.parse(item['created'])
+                if created < not_older_than:
+                    continue
+                result.append(dict(
+                    project=project['name'],
+                    title=item['title'],
+                    author=item['author'],
+                    created=item['created'],
+                    url=item['url']))
+        with open(export_path, 'w') as issues_file:
+            json.dump(result, issues_file)
+
+
 def main():
-    args = parser.parse_args()
-    config = ConfigParser.ConfigParser()
-    config.read(args.config_path)
-    try:
-        custom_template = config.get('config', 'template_path')
-        with open(custom_template) as templatefile:
-            template_content = templatefile.read()
-    except ConfigParser.NoOptionError:
-        template_content = DEFAULT_TEMPLATE
-    template = Template(template_content)
-    logging.basicConfig(
-        filename=config.get('config', 'log'), level=logging.WARNING)
-    projectsdata = []
-
-    projects = config.get('bitbucket', 'projects')
-    projectsdata.extend(Bitbucket(projects)())
-
-    projects = config.get('github', 'projects')
-    projectsdata.extend(Github(projects)())
-
-    result = template.render(projects=projectsdata)
-    json_result = []
-    not_older_than = (datetime.datetime.now() -
-                      datetime.timedelta(
-                        days=int(config.get('config', 'json_export_days'))))
-    for project in projectsdata:
-        for item in project['issues'] + project['pullrequests']:
-            created = dateutil.parser.parse(item['created'])
-            if created < not_older_than:
-                continue
-            json_result.append(dict(
-                project=project['name'],
-                title=item['title'],
-                author=item['author'],
-                created=item['created'],
-                url=item['url']))
-    with open('bbissues.json', 'w') as issues_file:
-        issues_file.write(json.dumps(json_result))
-
-    print result
-
+    handler = Handler()
+    handler.export_json()
+    handler.export_html()
 
 if __name__ == '__main__':
     main()

@@ -2,7 +2,8 @@
 The gocept.bbissues distribution
 ================================
 
-Collect open issues from multiple bitbucket repositories and generate a nice html page.
+Collect open issues from multiple bitbucket or github repositories and generate
+a nice html page or a file with json information about your projects.
 
 This package is compatible with Python version 2.7.
 
@@ -21,8 +22,11 @@ You have to provide a config file with the following content::
 
     [config]
     log = issues.log
+    html_export_path = export.html
+    json_export_path = export.json
     # The next line is optional it defaults to index.jj2 in the package
     template_path = template.jj2
+
 
     [bitbucket]
     projects = owner:project1
@@ -59,6 +63,5 @@ Call it using::
 
     $ <path to bin directory>/bbissues --config <path to config file>
 
-It prints the generated HTML to the console. You might need to redirect the
-output to a file.
+It saves the generated HTML to the file specified in config.
 
