@@ -88,7 +88,8 @@ class Bitbucket(Base):
                 prioclass=self.prioclass('normal'),
                 url=self.web_base_url.format(
                     '{}/{}/pull-requests/{}'.format(owner, project, pr['id'])),
-                author=pr['author']['display_name'])
+                author=pr['author']['display_name'],
+                comment_count=self.get_comment_count(pr))
             data.append(prdata)
         return data
 
@@ -96,6 +97,11 @@ class Bitbucket(Base):
         return dict(minor='warning',
                     major='danger',
                     normal='primary').get(prio, 'default')
+
+    def get_comment_count(self, issue_data):
+        comment_url = issue_data['links']['comments']['href']
+        comment_data = self.get_json(comment_url)
+        return comment_data['size']
 
     def collect_project_issues(self, owner, project):
         issues = self.get_json(self.issue_base_url.format(owner, project))
@@ -111,7 +117,8 @@ class Bitbucket(Base):
                 priority=issue['priority'],
                 prioclass=self.prioclass(issue['priority']),
                 url=self.web_base_url.format(issue['resource_uri'][18:]),
-                author=issue['reported_by']['display_name'])
+                author=issue['reported_by']['display_name'],
+                comment_count=issue['comment_count'])
             data.append(issuedata)
         return data
 
@@ -135,15 +142,37 @@ class Github(Base):
                 priority=None,
                 prioclass=None,
                 url=issue['html_url'],
-                author=issue['user']['login'])
+                author=issue['user']['login'],
+                comment_count=issue['comments'])
 
     def collect_project_issues(self, owner, project):
         return list(self.collect_data(
             self.issue_base_url.format(owner, project)))
 
+    def get_comment_count_pullrequest(self, pullrequest):
+        pullrequest_comments_url = pullrequest['comments_url']
+        pullrequest_comments = self.get_json(pullrequest_comments_url)
+        return len(pullrequest_comments)
+
     def collect_project_pullrequests(self, owner, project):
-        return list(self.collect_data(
-            self.pullrequest_base_url.format(owner, project)))
+        pullrequests = self.get_json(
+            self.pullrequest_base_url.format(owner, project))
+        if pullrequests is None:
+            return []
+        data = []
+        for pr in pullrequests:
+            pr_data = dict(
+                title=pr['title'],
+                content=pr['body'].strip(),
+                status=pr['state'],
+                created=timefmt(pr['created_at']),
+                priority=None,
+                prioclass=None,
+                url=pr['html_url'],
+                author=pr['user']['login'],
+                comment_count=self.get_comment_count_pullrequest(pr))
+            data.append(pr_data)
+        return data
 
 
 class Handler(object):
