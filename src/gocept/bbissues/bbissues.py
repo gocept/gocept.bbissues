@@ -156,6 +156,7 @@ class Handler(object):
             filename=self.config.get('config', 'log'),
             level=logging.WARNING)
         self.projects = self.get_projects()
+        self.time_rendered = datetime.now().strftime('%Y-%m-%d %H:%M')
 
     def get_config_option(self, option, section='config', default=None):
         try:
@@ -184,7 +185,8 @@ class Handler(object):
         with open(template_path) as templatefile:
             with open(export_path, 'w') as html_file:
                 (Template(templatefile.read())
-                 .stream(projects=self.projects)
+                 .stream(projects=self.projects,
+                         time_rendered=self.time_rendered)
                  .dump(html_file))
 
     def export_json(self):
