@@ -29,10 +29,18 @@ You have to provide a config file with the following content::
 
 
     [bitbucket]
+    # The owner always has to be provided. All projects by this owner 
+    # will be collected.
+    owner = owner
+    # Specific projects may be provided in the following way
     projects = owner:project1
                owner:project2
 
     [github]
+    # The owner always has to be provided. All projects by this owner 
+    # will be collected.
+    owner = owner
+    # Specific projects may be provided in the following way
     projects = owner:project1
                owner:project2
 
