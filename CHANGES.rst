@@ -2,7 +2,7 @@
 Change log for gocept.bbissues
 ==============================
 
-0.7 (unreleased)
+0.7 (2016-02-03)
 ================
 
 - Add time_rendered as a variable passed to the jinja2 template.
