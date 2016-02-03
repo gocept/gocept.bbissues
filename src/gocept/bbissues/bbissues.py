@@ -68,8 +68,9 @@ class Base(object):
 
 class Bitbucket(Base):
     """ Bitbucket class"""
-    projects_base_url = ('https://api.bitbucket.org/2.0/repositories' 
-                         '/{}?q=has_issues=true&pagelen=100')   
+
+    projects_base_url = ('https://api.bitbucket.org/2.0/repositories'
+                         '/{}?q=has_issues=true&pagelen=100')
     issue_base_url = ('https://api.bitbucket.org/1.0/repositories/{}/{}/'
                       'issues?status=new&status=open&status=on+hold')
     pullrequest_base_url = ('https://api.bitbucket.org/2.0/repositories/{}/{}'
@@ -83,7 +84,8 @@ class Bitbucket(Base):
         projects = self.get_json(self.projects_base_url.format(owner))
         if projects is None:
             return []
-        return ['{}:{}'.format(owner,project['name']) for project in projects['values']]
+        return ['{}:{}'.format(owner, project['name'])
+                for project in projects['values']]
 
     def collect_project_pullrequests(self, owner, project):
         prs = self.get_json(self.pullrequest_base_url.format(owner, project))
@@ -105,7 +107,7 @@ class Bitbucket(Base):
                 author=pr['author']['display_name'],
                 comment_count=self.get_comment_count(pr))
             data.append(prdata)
-        return data 
+        return data
 
     def prioclass(self, prio):
         return dict(minor='warning',
@@ -155,7 +157,7 @@ class Github(Base):
         projects = self.get_json(self.projects_base_url.format(owner))
         if projects is None:
             return []
-        return ['{}:{}'.format(owner,project['name']) 
+        return ['{}:{}'.format(owner, project['name'])
                 for project in projects if project['has_issues']]
 
     def collect_data(self, url):
@@ -222,10 +224,10 @@ class Handler(object):
 
     def get_projects(self):
         result = []
-        
+
         owner = self.get_config_option('owner', section='bitbucket')
         projects = self.get_config_option('projects', section='bitbucket')
-        
+
         if owner and projects:
             result.extend(Bitbucket(owner, projects)())
         else:
