@@ -13,6 +13,8 @@ Change log for gocept.bbissues
 
 - Add new template that renders a table with filter options.
 
+- Export type (Issue, PullRequest) to JSON file.
+
 
 0.6 (2016-01-27)
 ================

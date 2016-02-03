@@ -273,6 +273,8 @@ class Handler(object):
                     title=item['title'],
                     author=item['author'],
                     created=item['created'],
+                    type=('Issue' if item in project['issues']
+                          else 'PullRequest'),
                     url=item['url']))
         with open(export_path, 'w') as issues_file:
             json.dump(result, issues_file)
