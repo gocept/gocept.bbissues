@@ -6,8 +6,12 @@ Change log for gocept.bbissues
 ================
 
 - Add time_rendered as a variable passed to the jinja2 template.
+
 - Add the count of comments to the issue/pullrequest and pass to template.
+
 - Read the owner from the config file and collect all projects from this owner.
+
+- Add new template that renders a table with filter options.
 
 
 0.6 (2016-01-27)

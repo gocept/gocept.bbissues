@@ -1,8 +1,12 @@
-<html>
+<html lang="en">
 	<head>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		<script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+		<meta charset="utf-8"/>
 	    <style>
 	    	body {
 	        	padding-top: 70px;
@@ -10,96 +14,109 @@
 	    	.label {
 	    		display: inline-block;
 	    	}
+	    	table.dataTable {
+	    		font-size: 14px;
+	    	}
 	    </style>
 	</head>
 	<body>
 	    <!-- Navigation -->
 	    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 	        <div class="container">
-	            <!-- Brand and toggle get grouped for better mobile display -->
 	            <div class="navbar-header">
-	                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-	                    <span class="sr-only">Toggle navigation</span>
-	                    <span class="icon-bar"></span>
-	                    <span class="icon-bar"></span>
-	                    <span class="icon-bar"></span>
-	                </button>
-	                <a class="navbar-brand" href="#">bithub+gitbucket</a>
+			<a class="navbar-brand" href="#">bithub+gitbucket</a> 
 	            </div>
-	            <!-- Collect the nav links, forms, and other content for toggling 
-	            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-	                <ul class="nav navbar-nav">
-	                    <li>
-	                        <a href="#">Pull Requests</a>
-	                    </li>
-	                    <li>
-	                        <a href="#">Issues</a>
-	                    </li>
-	                    <li>
-	                        <a href="#">Both</a>
-	                    </li>
-	                </ul>
-	            </div> -->
-	            <!-- /.navbar-collapse -->
+		    <p class="navbar-text navbar-right small"> last time pulled {{time_rendered}}</p>
 	        </div>
-	        <!-- /.container -->
 	    </nav>
 
 	    <!-- Page Content -->
-	    <div class="container">
-			{% for project in projects %}
-			<div class="row">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-				    	<h3 class="panel-title">{{project.name}}</h3>
-					</div>
-					<div class="panel-body">
-						{% for issue in project.issues %}
-						<div class="row">
-							<div class="col-md-2">
-								<h4>{{issue.created}}</h4>
-							</div>
-					  		<div class="col-md-7">
-								<h4><a href="{{issue.url}}">{{issue.title}}</a></h4> 
-							</div>
-							<div class="col-md-3">
-								 <span class="label label-{{issue.prioclass}}">{{issue.priority}}</span> <span class="label label-default">by {{issue.author}}</span>
-							</div>
-						</div>
-						{% if issue.content %}
-						<div class="row">
-							<div class="col-md-9">
-								{{issue.content}}
-							</div><div class="col-md-3"></div>
-						</div>
-						{% endif %}
-						{% endfor %}
+	    	<table class="display compact" cellspacing="0" width="100%">
+	    		<thead>
+	    			<tr>
+	    				<th>Project</th>
+	    				<th>Type</th>
+	    				<th>Status</th>
+	    				<th>Priority</th>
+	    				<th>Title</th>
+	    				<th>Comments</th>
+	    				<th>Created</th>
+	    				<th>Author</th>
+	    			</tr>
+	    		</thead>
+		        <tfoot>
+		            <tr>
+	    				<th>Project</th>
+	    				<th>Type</th>
+	    				<th>Status</th>
+	    				<th>Priority</th>
+	    				<th>Title</th>
+	    				<th>Comments</th>
+	    				<th>Created</th>
+	    				<th>Author</th>
+		            </tr>
+		        </tfoot>
+	    		<tbody>
+				{% for project in projects %}
+					{% for issue in project.issues %}
+						<tr>
+							<td>{{project.name}}</td>
+							<td>Issue</td>
+							<td>{{issue.status}}</td>
+							<td>{{issue.priority}}</td>
+							<td><a href="{{issue.url}}">{{issue.title}}</a></td>
+							<td>{{issue.comment_count}}</td>
+							<td>{{issue.created}}</td>
+							<td>{{issue.author}}</td>
+						</tr>
+					{% endfor %}
 
-						{% for issue in project.pullrequests %}
-						<div class="row">
-							<div class="col-md-2">
-								<h4>{{issue.created}}</h4>
-							</div>
-					  		<div class="col-md-7">
-								<h4><a href="{{issue.url}}">{{issue.title}}</a></h4> 
-							</div>
-							<div class="col-md-3">
-								 <span class="label label-{{issue.prioclass}}">{{issue.priority}}</span> <span class="label label-default">by {{issue.author}}</span>
-							</div>
-						</div>
-						{% if issue.content %}
-						<div class="row">
-							<div class="col-md-9">
-								{{issue.content}}
-							</div><div class="col-md-3"></div>
-						</div>
-						{% endif %}
-						{% endfor %}
-					</div>
-		    	</div>
-		    <!-- /.row -->
-			</div>
-			{% endfor %}
-		</div>
+					{% for issue in project.pullrequests %}
+						<tr>
+							<td>{{project.name}}</td>
+							<td>PullRequest</td>
+							<td>{{issue.status}}</td>
+							<td>{{issue.priority}}</td>
+							<td><a href="{{issue.url}}">{{issue.title}}</a></td>
+							<td>{{issue.comment_count}}</td>
+							<td>{{issue.created}}</td>
+							<td>{{issue.author}}</td>
+						</tr>
+					{% endfor %}
+				{% endfor %}
+				</tbody>
+			</table>
+			<script type="text/javascript">
+			$(document).ready(function() {
+    			$('table').DataTable( {
+    				iDisplayLength: 25,
+        			initComplete: function () {
+            			this.api().columns().every( function () {
+                			var column = this;
+                			var name = $(column.footer()).text();
+                			$(column.footer()).empty()
+                			if (['Project', 'Type', 'Status', 'Priority', 'Author'].indexOf($(column.header()).text()) == -1) {
+                				return;
+                			}
+                			var select = $('<select><option value=""></option></select>')
+                    			.appendTo($(column.footer()))
+                    			.on( 'change', function () {
+                        			var val = $.fn.dataTable.util.escapeRegex(
+                            			$(this).val()
+                        			);
+
+                        			column
+                            			.search( val ? '^'+val+'$' : '', true, false )
+                            			.draw();
+                    		});
+
+                			column.data().unique().sort().each( function ( d, j ) {
+                    			select.append( '<option value="'+d+'">'+d+'</option>' )
+                			});
+            			});
+        			}
+    			});
+			});
+			</script>
 	</body>
 </html>
