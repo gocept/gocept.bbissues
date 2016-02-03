@@ -23,7 +23,8 @@ setup(
         'setuptools',
         'python-dateutil',
         'requests',
-        'jinja2'
+        'jinja2',
+	'mock',
     ],
 
     extras_require={
