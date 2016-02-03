@@ -31,8 +31,11 @@ class Base(object):
     pullrequest_base_url = NotImplemented
     web_base_url = NotImplemented
 
-    def __init__(self, projects):
-        self.projects = projects.split()
+    def __init__(self, owner, projects=None):
+        if projects:
+            self.projects = projects.split()
+        else:
+            self.projects = self.collect_projects(owner)
 
     def __call__(self):
         for owner, project in [p.split(':') for p in self.projects]:
@@ -45,6 +48,9 @@ class Base(object):
                     pullrequests=prdata)
 
     def get_error_message(self, data):
+        raise NotImplementedError()
+
+    def collect_projects(self, owner):
         raise NotImplementedError()
 
     def get_json(self, url):
@@ -61,7 +67,10 @@ class Base(object):
 
 
 class Bitbucket(Base):
+    """ Bitbucket class"""
 
+    projects_base_url = ('https://api.bitbucket.org/2.0/repositories'
+                         '/{}?q=has_issues=true&pagelen=100')
     issue_base_url = ('https://api.bitbucket.org/1.0/repositories/{}/{}/'
                       'issues?status=new&status=open&status=on+hold')
     pullrequest_base_url = ('https://api.bitbucket.org/2.0/repositories/{}/{}'
@@ -70,6 +79,13 @@ class Bitbucket(Base):
 
     def get_error_message(self, data):
         return data['error']['message']
+
+    def collect_projects(self, owner):
+        projects = self.get_json(self.projects_base_url.format(owner))
+        if projects is None:
+            return []
+        return ['{}:{}'.format(owner, project['name'])
+                for project in projects['values']]
 
     def collect_project_pullrequests(self, owner, project):
         prs = self.get_json(self.pullrequest_base_url.format(owner, project))
@@ -108,7 +124,12 @@ class Bitbucket(Base):
         if issues is None:
             return []
         data = []
+
         for issue in issues['issues']:
+            if 'reported_by' not in issue:
+                author = 'Anonym'
+            else:
+                author = issue['reported_by']['display_name']
             issuedata = dict(
                 title=issue['title'],
                 content=issue['content'].strip(),
@@ -117,7 +138,7 @@ class Bitbucket(Base):
                 priority=issue['priority'],
                 prioclass=self.prioclass(issue['priority']),
                 url=self.web_base_url.format(issue['resource_uri'][18:]),
-                author=issue['reported_by']['display_name'],
+                author=author,
                 comment_count=issue['comment_count'])
             data.append(issuedata)
         return data
@@ -125,11 +146,19 @@ class Bitbucket(Base):
 
 class Github(Base):
 
+    projects_base_url = 'https://api.github.com/users/{}/repos'
     issue_base_url = 'https://api.github.com/repos/{}/{}/issues'
     pullrequest_base_url = 'https://api.github.com/repos/{}/{}/pulls'
 
     def get_error_message(self, data):
         return data['message']
+
+    def collect_projects(self, owner):
+        projects = self.get_json(self.projects_base_url.format(owner))
+        if projects is None:
+            return []
+        return ['{}:{}'.format(owner, project['name'])
+                for project in projects if project['has_issues']]
 
     def collect_data(self, url):
         issues = self.get_json(url)
@@ -196,13 +225,21 @@ class Handler(object):
     def get_projects(self):
         result = []
 
+        owner = self.get_config_option('owner', section='bitbucket')
         projects = self.get_config_option('projects', section='bitbucket')
-        if projects:
-            result.extend(Bitbucket(projects)())
 
+        if owner and projects:
+            result.extend(Bitbucket(owner, projects)())
+        else:
+            result.extend(Bitbucket(owner)())
+
+        owner = self.get_config_option('owner', section='github')
         projects = self.get_config_option('projects', section='github')
-        if projects:
-            result.extend(Github(projects)())
+        if owner and projects:
+            result.extend(Github(owner, projects)())
+        else:
+            result.extend(Github(owner)())
+
         return result
 
     def export_html(self):
