@@ -31,11 +31,13 @@ class Base(object):
     pullrequest_base_url = NotImplemented
     web_base_url = NotImplemented
 
-    def __init__(self, owner, projects=None):
+    def __init__(self, owner=None, projects=None):
+        self.projects = []
+        if owner:
+            self.projects.extend(self.collect_projects(owner))
         if projects:
-            self.projects = projects.split()
-        else:
-            self.projects = self.collect_projects(owner)
+            self.projects.extend(projects.split())
+        self.projects = set(self.projects)
 
     def __call__(self):
         for owner, project in [p.split(':') for p in self.projects]:
