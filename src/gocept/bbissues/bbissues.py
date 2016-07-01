@@ -55,6 +55,12 @@ class Base(object):
     def collect_projects(self, owner):
         raise NotImplementedError()
 
+    def collect_project_issues(self, owner, project):
+        raise NotImplementedError()
+
+    def collect_project_pullrequests(self, owner, project):
+        raise NotImplementedError()
+
     def get_json(self, url):
         try:
             result = requests.get(url)
@@ -66,6 +72,15 @@ class Base(object):
             log.warn('Connection error while calling {}'.format(url))
             return []
         return result.json()
+
+    def get_projects(self, owner):
+        return self.get_json(self.projects_base_url.format(owner))
+
+    def get_pullrequests(self, owner, project):
+        return self.get_json(self.pullrequest_base_url.format(owner, project))
+
+    def get_issues(self, owner, project):
+        return self.get_json(self.issue_base_url.format(owner, project))
 
 
 class Bitbucket(Base):
@@ -83,14 +98,14 @@ class Bitbucket(Base):
         return data['error']['message']
 
     def collect_projects(self, owner):
-        projects = self.get_json(self.projects_base_url.format(owner))
+        projects = self.get_projects(owner)
         if projects is None:
             return []
         return ['{}:{}'.format(owner, project['name'])
                 for project in projects['values']]
 
     def collect_project_pullrequests(self, owner, project):
-        prs = self.get_json(self.pullrequest_base_url.format(owner, project))
+        prs = self.get_pullrequests(owner, project)
         data = []
         if prs is None:
             return []
@@ -122,7 +137,7 @@ class Bitbucket(Base):
         return comment_data['size']
 
     def collect_project_issues(self, owner, project):
-        issues = self.get_json(self.issue_base_url.format(owner, project))
+        issues = self.get_issues(owner, project)
         if issues is None:
             return []
         data = []
@@ -156,14 +171,13 @@ class Github(Base):
         return data['message']
 
     def collect_projects(self, owner):
-        projects = self.get_json(self.projects_base_url.format(owner))
+        projects = self.get_projects(owner)
         if projects is None:
             return []
         return ['{}:{}'.format(owner, project['name'])
                 for project in projects if project['has_issues']]
 
-    def collect_data(self, url):
-        issues = self.get_json(url)
+    def collect_data(self, issues):
         for issue in issues:
             yield dict(
                 title=issue['title'],
@@ -177,8 +191,8 @@ class Github(Base):
                 comment_count=issue['comments'])
 
     def collect_project_issues(self, owner, project):
-        return list(self.collect_data(
-            self.issue_base_url.format(owner, project)))
+        issues = self.get_issues(owner, project)
+        return list(self.collect_data(issues))
 
     def get_comment_count_pullrequest(self, pullrequest):
         pullrequest_comments_url = pullrequest['comments_url']
@@ -208,10 +222,9 @@ class Github(Base):
 
 class Handler(object):
 
-    def __init__(self):
-        args = parser.parse_args()
+    def __init__(self, config_path):
         self.config = ConfigParser.ConfigParser()
-        self.config.read(args.config_path)
+        self.config.read(config_path)
         logging.basicConfig(
             filename=self.config.get('config', 'log'),
             level=logging.WARNING)
@@ -232,6 +245,8 @@ class Handler(object):
 
         if owner and projects:
             result.extend(Bitbucket(owner, projects)())
+        elif projects:
+            result.extend(Bitbucket(projects=projects)())
         else:
             result.extend(Bitbucket(owner)())
 
@@ -239,6 +254,8 @@ class Handler(object):
         projects = self.get_config_option('projects', section='github')
         if owner and projects:
             result.extend(Github(owner, projects)())
+        elif projects:
+            result.extend(Github(projects=projects)())
         else:
             result.extend(Github(owner)())
 
@@ -255,7 +272,7 @@ class Handler(object):
                 (Template(templatefile.read())
                  .stream(projects=self.projects,
                          time_rendered=self.time_rendered)
-                 .dump(html_file))
+                 .dump(html_file, encoding="utf-8"))
 
     def export_json(self):
         export_path = self.get_config_option('json_export_path')
@@ -283,7 +300,8 @@ class Handler(object):
 
 
 def main():
-    handler = Handler()
+    args = parser.parse_args()
+    handler = Handler(args.config_path)
     handler.export_json()
     handler.export_html()
 
