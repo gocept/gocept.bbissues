@@ -5,7 +5,7 @@ Change log for gocept.bbissues
 0.8 (unreleased)
 ================
 
-- Nothing changed yet.
+- Don't crash on generating html if unicode is in the comments.
 
 
 0.7 (2016-02-03)
