@@ -88,7 +88,7 @@ class Bitbucket(Base):
 
     projects_base_url = ('https://api.bitbucket.org/2.0/repositories'
                          '/{}?q=has_issues=true&pagelen=100')
-    issue_base_url = ('https://api.bitbucket.org/1.0/repositories/{}/{}/'
+    issue_base_url = ('https://api.bitbucket.org/2.0/repositories/{}/{}/'
                       'issues?status=new&status=open&status=on+hold')
     pullrequest_base_url = ('https://api.bitbucket.org/2.0/repositories/{}/{}'
                             '/pullrequests')
@@ -119,8 +119,7 @@ class Bitbucket(Base):
                 created=timefmt(pr['created_on']),
                 priority='pullrequest',
                 prioclass=self.prioclass('normal'),
-                url=self.web_base_url.format(
-                    '{}/{}/pull-requests/{}'.format(owner, project, pr['id'])),
+                url=pr['links']['html']['href'],
                 author=pr['author']['display_name'],
                 comment_count=self.get_comment_count(pr))
             data.append(prdata)
@@ -142,21 +141,19 @@ class Bitbucket(Base):
             return []
         data = []
 
-        for issue in issues['issues']:
-            if 'reported_by' not in issue:
-                author = 'Anonym'
-            else:
-                author = issue['reported_by']['display_name']
+        for issue in issues['values']:
+            author = (issue['reporter']['display_name']
+                      if issue['reporter'] else 'Anonym')
             issuedata = dict(
                 title=issue['title'],
-                content=issue['content'].strip(),
-                status=issue['status'],
+                content=issue['content']['raw'].strip(),
+                status=issue['state'],
                 created=timefmt(issue['created_on']),
                 priority=issue['priority'],
                 prioclass=self.prioclass(issue['priority']),
-                url=self.web_base_url.format(issue['resource_uri'][18:]),
+                url=issue['links']['html']['href'],
                 author=author,
-                comment_count=issue['comment_count'])
+                comment_count=self.get_comment_count(issue))
             data.append(issuedata)
         return data
 
@@ -200,8 +197,7 @@ class Github(Base):
         return len(pullrequest_comments)
 
     def collect_project_pullrequests(self, owner, project):
-        pullrequests = self.get_json(
-            self.pullrequest_base_url.format(owner, project))
+        pullrequests = self.get_pullrequests(owner, project)
         if pullrequests is None:
             return []
         data = []
