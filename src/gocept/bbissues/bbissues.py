@@ -112,6 +112,12 @@ class Bitbucket(Base):
         for pr in prs['values']:
             if pr['state'] != 'OPEN':
                 continue
+            if 'reviewers' in pr:
+                assignee = ', '. join(
+                    [rev['display_name'] for rev in pr['reviewers']])
+            else:
+                assignee = '-'
+
             prdata = dict(
                 title=pr['title'],
                 content=pr['description'].strip(),
@@ -121,6 +127,7 @@ class Bitbucket(Base):
                 prioclass=self.prioclass('normal'),
                 url=pr['links']['html']['href'],
                 author=pr['author']['display_name'],
+                assignee=assignee,
                 comment_count=self.get_comment_count(pr))
             data.append(prdata)
         return data
@@ -144,6 +151,8 @@ class Bitbucket(Base):
         for issue in issues['values']:
             author = (issue['reporter']['display_name']
                       if issue['reporter'] else 'Anonym')
+            assignee = (issue['assignee']['display_name']
+                        if issue['assignee'] else '-')
             issuedata = dict(
                 title=issue['title'],
                 content=issue['content']['raw'].strip(),
@@ -153,6 +162,7 @@ class Bitbucket(Base):
                 prioclass=self.prioclass(issue['priority']),
                 url=issue['links']['html']['href'],
                 author=author,
+                assignee=assignee,
                 comment_count=self.get_comment_count(issue))
             data.append(issuedata)
         return data
@@ -185,6 +195,8 @@ class Github(Base):
                 prioclass=None,
                 url=issue['html_url'],
                 author=issue['user']['login'],
+                assignee=(issue['assignee']['login']
+                          if issue['assignee'] else '-'),
                 comment_count=issue['comments'])
 
     def collect_project_issues(self, owner, project):
@@ -211,6 +223,7 @@ class Github(Base):
                 prioclass=None,
                 url=pr['html_url'],
                 author=pr['user']['login'],
+                assignee=pr['assignee']['login'] if pr['assignee'] else '-',
                 comment_count=self.get_comment_count_pullrequest(pr))
             data.append(pr_data)
         return data
