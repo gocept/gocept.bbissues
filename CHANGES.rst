@@ -7,6 +7,8 @@ Change log for gocept.bbissues
 
 - Don't crash on generating html if unicode is in the comments.
 
+- Add assignee as a property to an item and use it in the standard template.
+
 
 0.7 (2016-02-03)
 ================

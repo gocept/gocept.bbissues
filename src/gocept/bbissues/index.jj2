@@ -24,7 +24,7 @@
 	    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 	        <div class="container">
 	            <div class="navbar-header">
-			<a class="navbar-brand" href="#">bithub+gitbucket</a> 
+			<a class="navbar-brand" href="#">bithub+gitbucket</a>
 	            </div>
 		    <p class="navbar-text navbar-right small"> last time pulled {{time_rendered}}</p>
 	        </div>
@@ -42,6 +42,7 @@
 	    				<th>Comments</th>
 	    				<th>Created</th>
 	    				<th>Author</th>
+                        <th>Assignee</th>
 	    			</tr>
 	    		</thead>
 		        <tfoot>
@@ -54,6 +55,7 @@
 	    				<th>Comments</th>
 	    				<th>Created</th>
 	    				<th>Author</th>
+                        <th>Assignee</th>
 		            </tr>
 		        </tfoot>
 	    		<tbody>
@@ -67,7 +69,8 @@
 							<td><a href="{{issue.url}}">{{issue.title}}</a></td>
 							<td>{{issue.comment_count}}</td>
 							<td>{{issue.created}}</td>
-							<td>{{issue.author}}</td>
+                            <td>{{issue.author}}</td>
+							<td>{{issue.assignee}}</td>
 						</tr>
 					{% endfor %}
 
@@ -81,6 +84,7 @@
 							<td>{{issue.comment_count}}</td>
 							<td>{{issue.created}}</td>
 							<td>{{issue.author}}</td>
+                            <td>{{issue.assignee}}</td>
 						</tr>
 					{% endfor %}
 				{% endfor %}
