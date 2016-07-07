@@ -128,6 +128,7 @@ class Bitbucket(Base):
                 url=pr['links']['html']['href'],
                 author=pr['author']['display_name'],
                 assignee=assignee,
+                type='PullRequest',
                 comment_count=self.get_comment_count(pr))
             data.append(prdata)
         return data
@@ -163,6 +164,7 @@ class Bitbucket(Base):
                 url=issue['links']['html']['href'],
                 author=author,
                 assignee=assignee,
+                type='Issue',
                 comment_count=self.get_comment_count(issue))
             data.append(issuedata)
         return data
@@ -197,6 +199,7 @@ class Github(Base):
                 author=issue['user']['login'],
                 assignee=(issue['assignee']['login']
                           if issue['assignee'] else '-'),
+                type='Issue',
                 comment_count=issue['comments'])
 
     def collect_project_issues(self, owner, project):
@@ -224,6 +227,7 @@ class Github(Base):
                 url=pr['html_url'],
                 author=pr['user']['login'],
                 assignee=pr['assignee']['login'] if pr['assignee'] else '-',
+                type='PullRequest',
                 comment_count=self.get_comment_count_pullrequest(pr))
             data.append(pr_data)
         return data
@@ -301,8 +305,7 @@ class Handler(object):
                     title=item['title'],
                     author=item['author'],
                     created=item['created'],
-                    type=('Issue' if item in project['issues']
-                          else 'PullRequest'),
+                    type=item['type'],
                     url=item['url']))
         with open(export_path, 'w') as issues_file:
             json.dump(result, issues_file)
