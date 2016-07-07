@@ -1,12 +1,15 @@
 from datetime import datetime, timedelta
 from jinja2 import Template
-import ConfigParser
 import argparse
 import dateutil.parser
 import json
 import logging
 import pkg_resources
 import requests
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 
 log = logging.getLogger('bbissues')
@@ -238,7 +241,7 @@ class Github(Base):
 class Handler(object):
 
     def __init__(self, config_path):
-        self.config = ConfigParser.ConfigParser()
+        self.config = configparser.ConfigParser()
         self.config.read(config_path)
         logging.basicConfig(
             filename=self.config.get('config', 'log'),
@@ -249,7 +252,7 @@ class Handler(object):
     def get_config_option(self, option, section='config', default=None):
         try:
             return self.config.get(section, option)
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             return default
 
     def get_projects(self):
