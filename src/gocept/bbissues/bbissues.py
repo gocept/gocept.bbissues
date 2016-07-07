@@ -188,6 +188,8 @@ class Github(Base):
 
     def collect_data(self, issues):
         for issue in issues:
+            if 'pull_request' in issue:
+                continue
             yield dict(
                 title=issue['title'],
                 content=issue['body'].strip(),
