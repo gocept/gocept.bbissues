@@ -17,7 +17,7 @@ def project_path(*names):
 
 setup(
     name='gocept.bbissues',
-    version='0.8.1',
+    version='0.8.2.dev0',
 
     install_requires=[
         'setuptools',
