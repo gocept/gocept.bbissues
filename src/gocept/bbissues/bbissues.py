@@ -68,7 +68,16 @@ class Base(object):
         try:
             result = requests.get(url)
             if not result.ok:
-                error = self.get_error_message(result.json())
+                try:
+                    error_body = result.json()
+                except ValueError as e:
+                    log.warn(
+                        'Request with status code {} '
+                        ' caused a {} while JSON-Decoding.'.format(
+                            result.status_code, str(e)))
+                    return []
+
+                error = self.get_error_message(error_body)
                 log.warn('Error while calling {}: {}'.format(url, error))
                 return []
         except requests.ConnectionError:
@@ -104,13 +113,13 @@ class Bitbucket(Base):
         projects = self.get_projects(owner)
         if projects is None:
             return []
-        return ['{}:{}'.format(owner, project['name'])
+        return ['{}:{}'.format(owner, project['name']).lower()
                 for project in projects['values']]
 
     def collect_project_pullrequests(self, owner, project):
-        prs = self.get_pullrequests(owner, project)
+        prs = self.get_pullrequests(owner, project.lower())
         data = []
-        if prs is None:
+        if not prs:
             return []
         for pr in prs['values']:
             if pr['state'] != 'OPEN':
@@ -147,8 +156,8 @@ class Bitbucket(Base):
         return comment_data['size']
 
     def collect_project_issues(self, owner, project):
-        issues = self.get_issues(owner, project)
-        if issues is None:
+        issues = self.get_issues(owner, project.lower())
+        if not issues:
             return []
         data = []
 
@@ -245,7 +254,7 @@ class Handler(object):
         self.config.read(config_path)
         logging.basicConfig(
             filename=self.config.get('config', 'log'),
-            level=logging.WARNING)
+            level=logging.INFO)
         self.projects = self.get_projects()
         self.time_rendered = datetime.now().strftime('%Y-%m-%d %H:%M')
 
@@ -261,6 +270,7 @@ class Handler(object):
         owner = self.get_config_option('owner', section='bitbucket')
         projects = self.get_config_option('projects', section='bitbucket')
 
+        log.info('Start working on Bitbucket.')
         if owner and projects:
             result.extend(Bitbucket(owner, projects)())
         elif projects:
@@ -268,6 +278,7 @@ class Handler(object):
         else:
             result.extend(Bitbucket(owner)())
 
+        log.info('Start working on Gitbub.')
         owner = self.get_config_option('owner', section='github')
         projects = self.get_config_option('projects', section='github')
         if owner and projects:
@@ -321,6 +332,7 @@ def main():
     handler = Handler(args.config_path)
     handler.export_json()
     handler.export_html()
+
 
 if __name__ == '__main__':
     main()
