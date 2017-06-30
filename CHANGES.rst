@@ -2,8 +2,8 @@
 Change log for gocept.bbissues
 ==============================
 
-0.9 (unreleased)
-================
+0.8.1 (2017-06-30)
+==================
 
 - Be more robust if the PRs or Issues are not available.
 
