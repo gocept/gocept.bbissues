@@ -5,7 +5,9 @@ Change log for gocept.bbissues
 0.9 (unreleased)
 ================
 
-- Nothing changed yet.
+- Be more robust if the PRs or Issues are not available.
+
+- Add logging in case of an API error.
 
 
 0.8 (2016-07-07)
