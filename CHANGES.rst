@@ -5,7 +5,7 @@ Change log for gocept.bbissues
 0.8.2 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Add support for Python 3.6 and 3.7.
 
 
 0.8.1 (2017-06-30)
