@@ -6,6 +6,7 @@ import json
 import logging
 import pkg_resources
 import requests
+import six
 try:
     import configparser
 except ImportError:
@@ -298,10 +299,13 @@ class Handler(object):
             'template_path', default=DEFAULT_TEMPLATE_PATH)
         with open(template_path) as templatefile:
             with open(export_path, 'w') as html_file:
-                (Template(templatefile.read())
-                 .stream(projects=self.projects,
-                         time_rendered=self.time_rendered)
-                 .dump(html_file, encoding="utf-8"))
+                stream = (Template(templatefile.read())
+                          .stream(projects=self.projects,
+                                  time_rendered=self.time_rendered))
+                if six.PY2:
+                    stream.dump(html_file, encoding="utf-8")
+                else:
+                    stream.dump(html_file)
 
     def export_json(self):
         export_path = self.get_config_option('json_export_path')

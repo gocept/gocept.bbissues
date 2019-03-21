@@ -20,10 +20,11 @@ setup(
     version='0.8.2.dev0',
 
     install_requires=[
-        'setuptools',
+        'jinja2',
         'python-dateutil',
         'requests',
-        'jinja2',
+        'setuptools',
+        'six',
     ],
 
     extras_require={
@@ -48,9 +49,10 @@ setup(
 License :: OSI Approved :: Zope Public License
 Programming Language :: Python
 Programming Language :: Python :: 2
-Programming Language :: Python :: 2.6
 Programming Language :: Python :: 2.7
-Programming Language :: Python :: 2 :: Only
+Programming Language :: Python :: 3
+Programming Language :: Python :: 3.6
+Programming Language :: Python :: 3.7
 """[:-1].split('\n'),
     description=__doc__.strip(),
     long_description='\n\n'.join(open(project_path(name)).read() for name in (
