@@ -5,6 +5,8 @@
 .installed.cfg
 .mr.developer.cfg
 .tox/
+bbissues.html
+bbissues.json
 bin
 build
 coverage-report
