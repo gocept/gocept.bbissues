@@ -1,4 +1,4 @@
-# Copyright (c) 2015 gocept gmbh & co. kg
+# Copyright (c) 2019 gocept gmbh & co. kg
 # See also LICENSE.txt
 
 # This should be only one line. If it must be multi-line, indent the second
@@ -17,7 +17,7 @@ def project_path(*names):
 
 setup(
     name='gocept.bbissues',
-    version='0.8.2.dev0',
+    version='0.9.dev0',
 
     install_requires=[
         'jinja2',
@@ -42,7 +42,7 @@ setup(
     author='gocept <mail@gocept.com>',
     author_email='mail@gocept.com',
     license='ZPL 2.1',
-    url='https://bitbucket.org/gocept/gocept.bbissues/',
+    url='https://github.com/gocept/gocept.bbissues',
 
     keywords='',
     classifiers="""\
@@ -53,6 +53,7 @@ Programming Language :: Python :: 2.7
 Programming Language :: Python :: 3
 Programming Language :: Python :: 3.6
 Programming Language :: Python :: 3.7
+Programming Language :: Python :: 3.8
 """[:-1].split('\n'),
     description=__doc__.strip(),
     long_description='\n\n'.join(open(project_path(name)).read() for name in (
