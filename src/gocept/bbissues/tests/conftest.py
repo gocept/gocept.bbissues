@@ -51,7 +51,7 @@ DUMMY_PROJECTS = [{
     'type': 'Issue',
     'title': u'Clean up control flow and transaction handling',
     'prioclass': 'danger'}],
-  'pullrequests':
+    'pullrequests':
   [{'status': u'OPEN',
     'priority': 'pullrequest',
     'created': '2016-06-06 09:17',

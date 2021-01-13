@@ -7,7 +7,7 @@ Change log for gocept.bbissues
 
 - Add support for Python 3.6, 3.7 and 3.8.
 
-- Migrate to github.
+- Migrate to GitHub and GitHub Actions.
 
 
 0.8.1 (2017-06-30)
@@ -23,7 +23,7 @@ Change log for gocept.bbissues
 
 - Don't crash on generating html if unicode is in the comments.
 
-- Handle PullRequests from Github correctly.
+- Handle PullRequests from GitHub correctly.
 
 - Add assignee as a property to an item and use it in the standard template.
 
@@ -73,7 +73,7 @@ Change log for gocept.bbissues
 0.2 (2016-01-13)
 ================
 
-- Add Github as issue source. (#3)
+- Add GitHub as issue source. (#3)
 
 
 0.1 (2015-04-08)
