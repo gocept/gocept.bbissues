@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from jinja2 import Template
 import argparse
 import dateutil.parser
@@ -7,6 +8,8 @@ import logging
 import pkg_resources
 import requests
 import six
+
+
 try:
     import configparser
 except ImportError:

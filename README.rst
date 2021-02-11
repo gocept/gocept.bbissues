@@ -29,7 +29,7 @@ You have to provide a config file with the following content::
 
 
     [bitbucket]
-    # The owner always has to be provided. All projects by this owner 
+    # The owner always has to be provided. All projects by this owner
     # will be collected.
     owner = owner
     # Specific projects may be provided in the following way
@@ -37,7 +37,7 @@ You have to provide a config file with the following content::
                owner:project2
 
     [github]
-    # The owner always has to be provided. All projects by this owner 
+    # The owner always has to be provided. All projects by this owner
     # will be collected.
     owner = owner
     # Specific projects may be provided in the following way
@@ -72,4 +72,3 @@ Call it using::
     $ <path to bin directory>/bbissues --config <path to config file>
 
 It saves the generated HTML to the file specified in config.
-
