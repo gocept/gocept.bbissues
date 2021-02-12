@@ -1,5 +1,6 @@
+from gocept.bbissues.bbissues import Base
+from gocept.bbissues.bbissues import timefmt
 import pytest
-from gocept.bbissues.bbissues import Base, timefmt
 
 
 @pytest.mark.parametrize('test_input,expected', [

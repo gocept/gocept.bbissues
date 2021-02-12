@@ -6,7 +6,8 @@
 """Collect issues from multiple repositories and generate a nice html page.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 import glob
 import os.path
 

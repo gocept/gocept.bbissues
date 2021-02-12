@@ -2,6 +2,7 @@
 import gocept.bbissues.bbissues
 import pytest
 
+
 TESTING_CONFIG = 'src/gocept/bbissues/tests/testing.cfg'
 
 
