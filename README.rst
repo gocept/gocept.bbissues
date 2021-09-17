@@ -5,7 +5,7 @@ The gocept.bbissues distribution
 Collect open issues from multiple bitbucket or github repositories and generate
 a nice html page or a file with json information about your projects.
 
-This package is compatible with Python version 2.7.
+This package is compatible with Python version 2.7, 3.6, 3.7 and 3.8.
 
 Installation
 ============
