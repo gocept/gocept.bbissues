@@ -5,7 +5,7 @@ Change log for gocept.bbissues
 0.10 (unreleased)
 =================
 
-- Nothing changed yet.
+- Remove support for Python 2.7.
 
 
 0.9 (2021-09-17)
