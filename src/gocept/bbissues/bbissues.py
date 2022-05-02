@@ -2,18 +2,12 @@ from datetime import datetime
 from datetime import timedelta
 from jinja2 import Template
 import argparse
+import configparser
 import dateutil.parser
 import json
 import logging
 import pkg_resources
 import requests
-import six
-
-
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
 
 
 log = logging.getLogger('bbissues')
@@ -305,10 +299,7 @@ class Handler(object):
                 stream = (Template(templatefile.read())
                           .stream(projects=self.projects,
                                   time_rendered=self.time_rendered))
-                if six.PY2:
-                    stream.dump(html_file, encoding="utf-8")
-                else:
-                    stream.dump(html_file)
+                stream.dump(html_file)
 
     def export_json(self):
         export_path = self.get_config_option('json_export_path')

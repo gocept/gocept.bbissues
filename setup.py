@@ -25,12 +25,10 @@ setup(
         'python-dateutil',
         'requests',
         'setuptools',
-        'six',
     ],
 
     extras_require={
         'test': [
-            'mock',
         ],
     },
 
