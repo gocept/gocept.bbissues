@@ -2,6 +2,12 @@
 Change log for gocept.bbissues
 ==============================
 
+0.11 (unreleased)
+=================
+
+- Nothing changed yet.
+
+
 0.10 (2022-05-02)
 =================
 

@@ -18,7 +18,7 @@ def project_path(*names):
 
 setup(
     name='gocept.bbissues',
-    version='0.10',
+    version='0.11.dev0',
 
     install_requires=[
         'jinja2',
