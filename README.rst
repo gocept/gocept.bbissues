@@ -2,6 +2,11 @@
 The gocept.bbissues distribution
 ================================
 
+.. caution::
+
+    This package is no longer maintained. In case of any interest on it, please
+    contact gocept.
+
 Collect open issues from multiple bitbucket or github repositories and generate
 a nice html page or a file with json information about your projects.
 
